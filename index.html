@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>구글 시트 연동 온습도 모니터링</title>
+  <style>
+    body { font-family: 'Malgun Gothic', sans-serif; text-align: center; padding: 50px; background-color: #f4f7f6; }
+    .sensor-box { background: white; border-radius: 15px; padding: 30px; display: inline-block; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    h2 { color: #2c3e50; margin-top: 0; }
+    .value { font-size: 28px; font-weight: bold; color: #27ae60; }
+    .time { font-size: 13px; color: #7f8c8d; margin-top: 20px; }
+  </style>
+  <script>
+    // ★ 2단계에서 복사한 본인의 전체 웹 앱 URL ([https://script.google.com/.../exec](https://script.google.com/.../exec))
+    const webAppUrl = "https://script.google.com/macros/s/AKfycbwc9T3Ij7wtdQL6dgaUkdamGtzsvkYplm26wip9pj93ARX2BNaBgNtpaushccxDBZLh/exec";
+
+    function fetchData() {
+      fetch(webAppUrl)
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById("temp").innerText = data.temp + " °C";
+          document.getElementById("humi").innerText = data.humi + " %";
+          
+          // 구글 시트의 시간을 보기 좋게 변환
+          const date = new Date(data.time);
+          document.getElementById("time").innerText = date.toLocaleString('ko-KR');
+        })
+        .catch(error => {
+          console.error("데이터 가져오기 실패:", error);
+        });
+    }
+
+    window.onload = function() {
+      fetchData();
+      // 1분마다 새로고침
+      setInterval(fetchData, 60000);
+    };
+  </script>
+</head>
+<body>
+
+  <div class="sensor-box">
+    <h2>방구석 실시간 온습도</h2>
+    <p>🌡️ 온도: <span id="temp" class="value">읽어오는 중...</span></p>
+    <p>💧 습도: <span id="humi" class="value">읽어오는 중...</span></p>
+    <p class="time">마지막 기록 시간: <span id="time"></span></p>
+  </div>
+
+</body>
+</html>
