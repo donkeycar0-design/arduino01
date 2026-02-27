@@ -7,18 +7,47 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700&display=swap');
-    body {
-      font-family: 'Pretendard', sans-serif;
+    /* Pretendard 및 고대비 디지털 폰트 로드 */
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Pretendard:wght@400;600;700;800&display=swap');
+    
+    /* 깔끔한 세븐 세그먼트 볼드 폰트 */
+    @font-face {
+      font-family: 'DSEG7-Bold';
+      src: url('https://cdn.jsdelivr.net/gh/keshikan/DSEG@v0.46/fonts/DSEG7-Classic/DSEG7Classic-Bold.woff2') format('woff2');
     }
+
+    body {
+      font-family: 'Pretendard', 'Malgun Gothic', sans-serif;
+    }
+
+    /* 잔상 없는 깔끔한 볼드 디지털 스타일 */
+    .digital-segment-bold {
+      font-family: 'DSEG7-Bold', sans-serif;
+      font-weight: 900;
+      letter-spacing: 0.02em;
+    }
+
+    /* 카드 배경 효과 */
+    .temp-card {
+      background: linear-gradient(135deg, #fff 0%, #fffaf5 100%);
+      border: 1px solid rgba(249, 115, 22, 0.15);
+    }
+    
+    .humi-card {
+      background: linear-gradient(135deg, #fff 0%, #f5faff 100%);
+      border: 1px solid rgba(59, 130, 246, 0.15);
+    }
+
     .status-dot {
       animation: pulse 2s infinite;
     }
+    
     @keyframes pulse {
-      0% { opacity: 1; }
-      50% { opacity: 0.3; }
-      100% { opacity: 1; }
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.2); }
+      100% { opacity: 1; transform: scale(1); }
     }
+    
     canvas {
       width: 100% !important;
       height: 100% !important;
@@ -30,62 +59,92 @@
   <div class="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-3 gap-6">
     
     <!-- 왼쪽: 현재 수치 카드 -->
-    <div class="lg:col-span-1 bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100 flex flex-col">
-      <div class="bg-indigo-700 p-6 text-white">
-        <div class="flex justify-between items-center mb-2">
-          <span class="text-indigo-100 text-sm font-medium uppercase tracking-wider">Lab Environment</span>
-          <div class="flex items-center gap-2">
-            <span id="status-text" class="text-xs">연결됨</span>
-            <div id="status-dot" class="w-2 h-2 bg-green-400 rounded-full status-dot"></div>
+    <div class="lg:col-span-1 bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100 flex flex-col">
+      <!-- 헤더 -->
+      <div class="bg-slate-900 py-4 px-6 text-white text-left">
+        <div class="flex justify-between items-start mb-1">
+          <span class="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em]">Lab Air Quality Control</span>
+          <div class="flex flex-col items-end">
+            <!-- LIVE 상태 표시 -->
+            <div class="flex items-center gap-2">
+              <span id="status-text" class="text-[10px] font-bold text-green-400">LIVE</span>
+              <div id="status-dot" class="w-2 h-2 bg-green-400 rounded-full status-dot"></div>
+            </div>
+            <!-- 정보 섹션: 모든 글자 크기를 text-[9px]로 통일 -->
+            <div class="flex flex-col items-end mt-1 space-y-0.5">
+              <span class="text-[9px] font-bold text-green-400 text-right leading-tight max-w-[140px] opacity-90">
+                Arduino R4 logging data to Google Sheets every minute
+              </span>
+              <span class="text-[9px] font-bold text-green-400 opacity-90">
+                Contact: skids@hanmail.net
+              </span>
+              <span class="text-[9px] font-bold text-green-400 uppercase tracking-wider opacity-90">
+                Kim ByungDoo
+              </span>
+            </div>
           </div>
         </div>
-        <h1 class="text-2xl font-bold">연구실 공기질 현황</h1>
+        <h1 class="text-3xl font-extrabold tracking-tight">연구실 공기질 현황</h1>
       </div>
 
-      <div class="p-8 space-y-8 flex-grow">
-        <!-- Temperature -->
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-4">
-            <div class="w-12 h-12 bg-orange-100 rounded-2xl flex items-center justify-center text-2xl">🌡️</div>
-            <div>
-              <p class="text-slate-500 text-sm font-medium">현재 온도</p>
-              <h2 id="temp" class="text-3xl font-bold text-slate-800">-- °C</h2>
+      <div class="p-8 space-y-6 flex-grow">
+        <div class="grid grid-cols-1 gap-4">
+          
+          <!-- Temperature Card -->
+          <div class="p-6 rounded-3xl temp-card shadow-sm flex flex-col">
+            <div class="text-left w-full mb-2">
+              <div class="flex items-center gap-2">
+                <span class="text-xl">🌡️</span>
+                <p class="text-slate-600 text-xs font-bold uppercase tracking-wider">Temperature</p>
+              </div>
+            </div>
+            
+            <div class="text-center py-4">
+              <h2 id="temp" class="digital-segment-bold text-8xl text-orange-600 leading-none">
+                --<span class="font-sans text-3xl ml-2 align-top text-slate-400">°C</span>
+              </h2>
             </div>
           </div>
-        </div>
-
-        <!-- Humidity -->
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-4">
-            <div class="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center text-2xl">💧</div>
-            <div>
-              <p class="text-slate-500 text-sm font-medium">현재 습도</p>
-              <h2 id="humi" class="text-3xl font-bold text-slate-800">-- %</h2>
+          
+          <!-- Humidity Card -->
+          <div class="p-6 rounded-3xl humi-card shadow-sm flex flex-col">
+            <div class="text-left w-full mb-2">
+              <div class="flex items-center gap-2">
+                <span class="text-xl">💧</span>
+                <p class="text-slate-600 text-xs font-bold uppercase tracking-wider">Humidity</p>
+              </div>
+            </div>
+            
+            <div class="text-center py-4">
+              <h2 id="humi" class="digital-segment-bold text-8xl text-blue-600 leading-none">
+                --<span class="font-sans text-3xl ml-2 align-top text-slate-400">%</span>
+              </h2>
             </div>
           </div>
+
         </div>
 
-        <div class="border-t border-slate-100 pt-6">
-          <div class="flex flex-col items-center text-center">
-            <p class="text-slate-400 text-xs mb-1">마지막 업데이트</p>
-            <p id="time" class="text-slate-600 text-sm font-medium">데이터 로딩 중...</p>
+        <!-- 업데이트 시간 -->
+        <div class="pt-2">
+          <div class="flex flex-col items-center text-center p-4 bg-slate-50 rounded-2xl border border-slate-100">
+            <p class="text-slate-400 text-[9px] font-black mb-1 uppercase tracking-widest">Last Updated</p>
+            <p id="time" class="font-mono text-slate-700 text-lg font-bold tracking-tighter">--:--:--</p>
           </div>
         </div>
 
-        <button onclick="fetchData()" class="w-full py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors duration-200 flex items-center justify-center gap-2 text-sm mt-4">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M240,128a112,112,0,0,1-212.71,39.05,8,8,0,0,1,13.42-8.77A96,96,0,1,0,56.8,71.16L33.37,94.59A8,8,0,0,1,20,88.94V24a8,8,0,0,1,16,0V63.51L59.51,40A112,112,0,0,1,240,128Z"></path></svg>
-          즉시 새로고침
+        <!-- 동기화 버튼 -->
+        <button onclick="fetchData()" class="w-full py-4 px-4 bg-slate-900 hover:bg-black text-white font-bold rounded-2xl transition-all duration-300 flex items-center justify-center gap-2 text-sm shadow-xl active:scale-95">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 256 256"><path d="M240,128a112,112,0,0,1-212.71,39.05,8,8,0,0,1,13.42-8.77A96,96,0,1,0,56.8,71.16L33.37,94.59A8,8,0,0,1,20,88.94V24a8,8,0,0,1,16,0V63.51L59.51,40A112,112,0,0,1,240,128Z"></path></svg>
+          데이터 새로고침
         </button>
       </div>
     </div>
 
     <!-- 오른쪽: 그래프 섹션 -->
-    <div class="lg:col-span-2 bg-white rounded-3xl shadow-xl p-6 border border-slate-100 flex flex-col min-h-[400px]">
-      <div class="mb-4 flex justify-between items-end">
-        <div>
-          <h3 class="text-lg font-bold text-slate-800">시간별 변화 추이</h3>
-          <p class="text-sm text-slate-500">최근 20개의 수집 데이터가 그래프로 표시됩니다.</p>
-        </div>
+    <div class="lg:col-span-2 bg-white rounded-3xl shadow-2xl p-6 border border-slate-100 flex flex-col min-h-[500px]">
+      <div class="mb-6">
+        <h3 class="text-xl font-extrabold text-slate-800">시간별 변화 추이</h3>
+        <p class="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Real-time Environmental Analytics</p>
       </div>
       <div class="flex-grow relative">
         <canvas id="sensorChart"></canvas>
@@ -95,12 +154,13 @@
   </div>
 
   <script>
-    const webAppUrl = "https://script.google.com/macros/s/AKfycbwc9T3Ij7wtdQL6dgaUkdamGtzsvkYplm26wip9pj93ARX2BNaBgNtpaushccxDBZLh/exec";
+    const webAppUrl = "https://script.google.com/macros/s/AKfycby8r36nt4wp6hgltSaOY8O8NiYRnxRPq_LCYWLe4KvI6xUc7c5EZerDqhMezh7-huJj/exec";
     let myChart;
-    const MAX_DATA_POINTS = 20;
 
     function initChart() {
       const ctx = document.getElementById('sensorChart').getContext('2d');
+      Chart.defaults.font.family = 'Pretendard';
+      
       myChart = new Chart(ctx, {
         type: 'line',
         data: {
@@ -110,8 +170,9 @@
               label: '온도 (°C)',
               data: [],
               borderColor: '#f97316',
-              backgroundColor: 'rgba(249, 115, 22, 0.1)',
+              backgroundColor: 'rgba(249, 115, 22, 0.05)',
               borderWidth: 3,
+              pointRadius: 3,
               tension: 0.4,
               fill: true,
               yAxisID: 'y'
@@ -120,8 +181,9 @@
               label: '습도 (%)',
               data: [],
               borderColor: '#3b82f6',
-              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              backgroundColor: 'rgba(59, 130, 246, 0.05)',
               borderWidth: 3,
+              pointRadius: 3,
               tension: 0.4,
               fill: true,
               yAxisID: 'y1'
@@ -131,35 +193,16 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { position: 'top', labels: { font: { weight: '700' } } }
+          },
           scales: {
             x: { grid: { display: false } },
-            y: { 
-              type: 'linear', display: true, position: 'left',
-              title: { display: true, text: '온도 (°C)', font: { weight: 'bold' } },
-              suggestedMin: 15, suggestedMax: 35
-            },
-            y1: {
-              type: 'linear', display: true, position: 'right',
-              title: { display: true, text: '습도 (%)', font: { weight: 'bold' } },
-              suggestedMin: 20, suggestedMax: 80,
-              grid: { drawOnChartArea: false }
-            }
+            y: { type: 'linear', display: true, position: 'left', suggestedMin: 15, suggestedMax: 35 },
+            y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, suggestedMin: 20, suggestedMax: 80 }
           }
         }
       });
-    }
-
-    function updateStatus(isError) {
-      const dot = document.getElementById("status-dot");
-      const text = document.getElementById("status-text");
-      if (isError) {
-        dot.classList.replace("bg-green-400", "bg-red-500");
-        text.innerText = "연결 오류";
-      } else {
-        dot.classList.replace("bg-red-500", "bg-green-400");
-        text.innerText = "연결됨";
-      }
     }
 
     async function fetchData() {
@@ -169,42 +212,35 @@
 
       try {
         const response = await fetch(webAppUrl);
-        if (!response.ok) throw new Error('Network error');
-        const data = await response.json();
-        
-        tempEl.innerText = data.temp + " °C";
-        humiEl.innerText = data.humi + " %";
-        const date = new Date(data.time);
-        const timeLabel = date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
-        timeEl.innerText = date.toLocaleString('ko-KR');
+        let responseData = await response.json();
+        let history = Array.isArray(responseData) ? responseData : [responseData];
 
-        if (myChart) {
-          const lastLabel = myChart.data.labels[myChart.data.labels.length - 1];
-          if (lastLabel !== timeLabel) {
-            myChart.data.labels.push(timeLabel);
-            myChart.data.datasets[0].data.push(data.temp);
-            myChart.data.datasets[1].data.push(data.humi);
+        if (history.length > 0) {
+          const latest = history[history.length - 1];
+          tempEl.innerHTML = Math.round(latest.temp) + '<span class="font-sans text-3xl ml-2 align-top text-slate-400">°C</span>';
+          humiEl.innerHTML = Math.round(latest.humi) + '<span class="font-sans text-3xl ml-2 align-top text-slate-400">%</span>';
+          
+          const date = new Date(latest.time);
+          timeEl.innerText = date.toLocaleTimeString('ko-KR', { hour12: false });
 
-            if (myChart.data.labels.length > MAX_DATA_POINTS) {
-              myChart.data.labels.shift();
-              myChart.data.datasets[0].data.shift();
-              myChart.data.datasets[1].data.shift();
-            }
-            myChart.update('none');
-          }
+          const labels = [];
+          const tVals = [];
+          const hVals = [];
+          history.forEach(item => {
+            const d = new Date(item.time);
+            labels.push(d.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }));
+            tVals.push(item.temp);
+            hVals.push(item.humi);
+          });
+          myChart.data.labels = labels;
+          myChart.data.datasets[0].data = tVals;
+          myChart.data.datasets[1].data = hVals;
+          myChart.update();
         }
-        updateStatus(false);
-      } catch (error) {
-        console.error("데이터 수집 실패:", error);
-        updateStatus(true);
-      }
+      } catch (e) { console.error(e); }
     }
 
-    window.onload = function() {
-      initChart();
-      fetchData();
-      setInterval(fetchData, 60000);
-    };
+    window.onload = () => { initChart(); fetchData(); setInterval(fetchData, 60000); };
   </script>
 </body>
 </html>
